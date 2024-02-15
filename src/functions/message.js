@@ -35,7 +35,7 @@ app.http('message', {
             const pool = new pg.Pool(config);
             const client = await pool.connect();
 
-            const table = await request.query.get('table');
+            const table = request.query.get('table');
             const body = await request.json();
 
             let hasError = false;
