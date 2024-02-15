@@ -1,4 +1,4 @@
-const { app } = require('@azure/functions');
+const { app, input } = require('@azure/functions');
 const pg = require('pg');
 
 function composeInsertString(arr, tableName) {
@@ -6,6 +6,11 @@ function composeInsertString(arr, tableName) {
 
     });
 }
+
+
+// const tableInput = input.table({
+//     tableName: 
+// })
 
 app.http('message', {
     methods: ['POST'],
@@ -30,12 +35,13 @@ app.http('message', {
             const pool = new pg.Pool(config);
             const client = await pool.connect();
 
+            const table = await request.query.get('table');
             const body = await request.json();
 
             let hasError = false;
             body.forEach(async (record) =>
                 {
-                    sqlQueryStart = 'INSERT INTO G4BI_Items ('
+                    sqlQueryStart = `INSERT INTO ${table} (`
                     sqlQueryEnd = 'VALUES ('
                     valuesForQuery = []
                     Object.keys(record).forEach((key,index)=> 
@@ -61,13 +67,13 @@ app.http('message', {
                   sqlQueryStart += ') '
                   sqlQueryEnd += ') '
                   sqlText = sqlQueryStart + sqlQueryEnd + 'RETURNING *'
-                  console.log(sqlText, "-", valuesForQuery)
+                  context.log(sqlText, "-", valuesForQuery)
                       try {
                         const queryResult = await client.query(sqlText, valuesForQuery);
               
-                console.log(queryResult);
+                context.log(queryResult);
                       } catch (err) {
-                        console.error(err.message);
+                        context.error(err.message);
                         hasError = true;
                       }
                 })
@@ -93,26 +99,31 @@ app.http('message', {
             //         sqlQueryEnd += ', ' + valueField
             //     }
              
-            //     console.log(key, "-", index, "-", valueField)
+            //     context.log(key, "-", index, "-", valueField)
             //     })
             //   sqlQueryStart += ') '
             //   sqlQueryEnd += '); '
 
             //     // Execute query
-            //     console.log(sqlQueryStart + sqlQueryEnd)
+            //     context.log(sqlQueryStart + sqlQueryEnd)
             //     const queryResult = await client.query(sqlQueryStart + sqlQueryEnd, );
               
-            //     console.log(queryResult);
+            //     context.log(queryResult);
             // })
 
             
             // Release connection
             client.release();
-            return { body: hasError ? `error` : `done` };
+
+            if (hasError) {
+                return { code: 400, body: 'error' };
+            }
+            
+            return { body: `done` };
         } catch (err) {
-            console.error(err.message);
+            context.error(err.message);
         }
 
-        return { body: `error` };
+        return { code: 400, body: `error` };
     }
 });
