@@ -72,35 +72,42 @@ const mock = {
   count: 1,
 };
 
-function createQuery(results) {
-    return results.objects.map(obj => {
-        const table = obj.name.toLowerCase();
-        const properties = obj.schema.properties;
-        
-        const columns = Object.entries(properties).reduce((acc, curr) => {
-          const [key, value] = curr;
-          const type = value.type.toLowerCase() || 'string';
+function composeQueryFromView(view) {
+  const table = view.name.toLowerCase();
+  const properties = view.schema.properties;
 
-          // TODO: Find a scalable (?) way to map types
-          switch (type) {
-            case 'integer':
-              acc.push({name: key.toLowerCase(), type: 'bigint'});
-              break
-            case 'number':
-              acc.push({name: key.toLowerCase(), type: 'numeric'});
-              break;
-            case 'string':
-            default:
-                acc.push({name: key.toLowerCase(), type: `varchar(${value.maxLength || 2000})`})
-                break;
-          }
+  const columns = Object.entries(properties).reduce((acc, curr) => {
+    const [key, value] = curr;
+    const type = value.type.toLowerCase() || "string";
 
-          return acc;
-        }, []);
+    // TODO: Find a scalable (?) way to map types
+    switch (type) {
+      case "integer":
+        acc.push({ name: key.toLowerCase(), type: "bigint" });
+        break;
+      case "number":
+        acc.push({ name: key.toLowerCase(), type: "numeric" });
+        break;
+      case "string":
+      default:
+        acc.push({
+          name: key.toLowerCase(),
+          type: `varchar(${value.maxLength || 2000})`,
+        });
+        break;
+    }
 
-        const text = columns.map(col => `${col.name} ${col.type}` );
-        return `drop table if exists ${table}; create table ${table} (${text});`;
-    });
+    return acc;
+  }, []);
+
+  const text = columns.map((col) => `${col.name} ${col.type}`);
+  return `drop table if exists ${table}; create table ${table} (${text});`;
+}
+
+function createQuery(result) {
+  return result.objects.map((view) => {
+    return composeQueryFromView(view);
+  });
 }
 
 function createTable(results) {
@@ -153,7 +160,10 @@ app.http("create", {
 
     try {
       const body = await request.json();
-      const queries = createQuery(body);
+
+      const query = composeQueryFromView(body);
+      
+      // const queries = createQuery(body);      
 
       try {
         // Connect to the database
@@ -169,13 +179,17 @@ app.http("create", {
         const pool = new pg.Pool(config);
         const client = await pool.connect();
 
-        context.log(queries);
+        
+        // context.log(queries);
         // const result = await client.query(query);
-        const commands = queries.map(query => client.query(query));
-        const result = await Promise.all(commands);
+        // const commands = queries.map((query) => client.query(query));
+        // const result = await Promise.all(commands);
 
+        context.log(query);
+        const result = await client.query(query);
+      
         client.release();
-        return { status: 200, jsonBody: result, };
+        return { status: 200, jsonBody: result };
       } catch (err) {
         // Database error
         context.error(err.message);
