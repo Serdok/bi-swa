@@ -72,6 +72,39 @@ const mock = {
   count: 1,
 };
 
+
+
+function createQuery(results) {
+    return results.objects.map(obj => {
+        const table = obj.name.toLowerCase();
+        const properties = obj.schema.properties;
+        
+        const columns = Object.entries(properties).reduce((acc, curr) => {
+          const [key, value] = curr;
+          const type = value.type.toLowerCase() || 'string';
+
+          // TODO: Find a scalable (?) way to map types
+          switch (type) {
+            case 'integer':
+              acc.push({name: key.toLowerCase(), type: 'bigint'});
+              break
+            case 'number':
+              acc.push({name: key.toLowerCase(), type: 'numeric'});
+              break;
+            case 'string':
+            default:
+                acc.push({name: key.toLowerCase(), type: `varchar(${value.maxLength || 2000})`})
+                break;
+          }
+
+          return acc;
+        }, []);
+
+        const text = columns.map(col => `${col.name} ${col.type}` );
+        return `drop table if exists ${table}; create table ${table} (${text});`;
+    });
+}
+
 function createTable(results) {
   const tableName = results.objects[0].name.toLowerCase();
   const schemaProperties = results.objects[0].schema.properties;
@@ -122,8 +155,7 @@ app.http("create", {
 
     try {
       const body = await request.json();
-
-      const query = createTable(body);
+      const queries = createQuery(body);
 
       try {
         // Connect to the database
@@ -139,16 +171,20 @@ app.http("create", {
         const pool = new pg.Pool(config);
         const client = await pool.connect();
 
-        context.log(query);
-        const result = await client.query(query);
+        context.log(queries);
+        // const result = await client.query(query);
+        const commands = queries.map(query => client.query(query));
+        const result = await Promise.all(commands);
 
         client.release();
-        return { status: 200, jsonBody: result };
+        return { status: 200, jsonBody: result, };
       } catch (err) {
+        // Database error
         context.error(err.message);
         return { status: 500, body: err };
       }
     } catch (err) {
+      // Validation error
       context.error(err.message);
       return { status: 400, body: err };
     }
