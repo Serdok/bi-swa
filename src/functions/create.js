@@ -72,8 +72,6 @@ const mock = {
   count: 1,
 };
 
-
-
 function createQuery(results) {
     return results.objects.map(obj => {
         const table = obj.name.toLowerCase();
