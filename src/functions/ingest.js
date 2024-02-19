@@ -10,13 +10,13 @@ function createQuery(data, tableName) {
           return acc;
         }, {columns: [], values: []});
       
-        const columns = obj.columns.map(column => `"${column}"`)
+        const columns = obj.columns.map(column => `${column.toLowerCase()}`)
         const placeholders = obj.values.map((value, idx) => `$${idx + 1}`)
         return { text: `insert into ${tableName.toLowerCase()} (${columns}) values (${placeholders})`, values: obj.values};
     });
 }
 
-app.http('message', {
+app.http('ingest', {
     methods: ['POST'],
     authLevel: 'anonymous',
     handler: async (request, context) => {
@@ -38,7 +38,6 @@ app.http('message', {
 
         try {
             const body = await request.json();
-
             const queries = createQuery(body, tableName);
 
             // Connect to the database
