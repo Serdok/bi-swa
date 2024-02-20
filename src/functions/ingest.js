@@ -36,6 +36,7 @@ app.http("ingest", {
       database: process.env["PGDATABASE"],
       ssl: true,
       // idleTimeoutMillis: 1000,
+      allowExitOnIdle: true,
     };
 
     const tableName = request.query.get("table");
