@@ -53,15 +53,14 @@ app.http("ingest", {
       const pool = new pg.Pool(config);
 
       // Prepare queries - ignore errors and proceeed
-      const commands = queries.map((query) =>
-        pool.query(query.text, query.values)
-      );
+      const startTime = Date.now();
+      const commands = queries.map((query) => pool.query(query.text, query.values));
       const results = await Promise.allSettled(commands);
 
       const rejected = results
         .map((result, idx) => ({ row: idx + 1, result }))
         .filter((result) => result.result.status === "rejected");
-      context.log(`Done, ${results.length - rejected.length} rows processed`);
+      context.log(`Done, ${results.length - rejected.length} rows processed in ${Date.now() - startTime} ms`);
 
       const messages = rejected.map((rej) => ({
         row: rej.row,
