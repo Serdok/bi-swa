@@ -69,7 +69,13 @@ app.http("ingest", {
         message: rej.result.reason.message,
       }));
       client.release();
-      return { status: rejected.length > 0 ? 206 : 201, jsonBody: messages };
+
+      if (rejected.length > 0) {
+        context.error(messages);
+        return { status: 206, jsonBody: messages };
+      }
+      
+      return { status: 201, jsonBody: {}};
     } catch (err) {
       context.error(err.message);
       return { status: 500, jsonBody: err };
