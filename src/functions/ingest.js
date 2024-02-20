@@ -35,6 +35,7 @@ app.http("ingest", {
       password: process.env["PGPASSWORD"],
       database: process.env["PGDATABASE"],
       ssl: true,
+      // idleTimeoutMillis: 1000,
     };
 
     const tableName = request.query.get("table");
@@ -67,6 +68,7 @@ app.http("ingest", {
         message: rej.result.reason.message,
       }));
 
+      await pool.end();
       if (rejected.length > 0) {
         context.error(messages);
         return { status: 206, jsonBody: messages };
