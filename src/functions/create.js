@@ -22,7 +22,7 @@ function composeQueryFromView(view) {
       default:
         acc.push({
           name: key.toLowerCase(),
-          type: `varchar(${value.maxLength || 2000})`,
+          type: `varchar(255)`,
         });
         break;
     }
