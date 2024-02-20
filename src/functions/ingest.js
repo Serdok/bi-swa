@@ -51,11 +51,10 @@ app.http("ingest", {
 
       // Connect to the database
       const pool = new pg.Pool(config);
-      const client = await pool.connect();
 
       // Prepare queries - ignore errors and proceeed
       const commands = queries.map((query) =>
-        client.query(query.text, query.values)
+        pool.query(query.text, query.values)
       );
       const results = await Promise.allSettled(commands);
 
@@ -68,13 +67,12 @@ app.http("ingest", {
         row: rej.row,
         message: rej.result.reason.message,
       }));
-      client.release();
 
       if (rejected.length > 0) {
         context.error(messages);
         return { status: 206, jsonBody: messages };
       }
-      
+
       return { status: 201, jsonBody: {}};
     } catch (err) {
       context.error(err.message);
