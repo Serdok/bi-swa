@@ -59,5 +59,6 @@ jobs:
         with:
           app-name: 'poc-bi-api'
           slot-name: 'dev'
+          respect-funcignore: true
           package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_7EBAB7DEB53F4E518125A01258FA5478 }}

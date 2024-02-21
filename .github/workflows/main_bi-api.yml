@@ -57,5 +57,6 @@ jobs:
         id: fa
         with:
           app-name: 'tldbi-api'
+          respect-funcignore: true
           package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
