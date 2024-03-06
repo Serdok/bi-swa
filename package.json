@@ -5,6 +5,7 @@
   "description": "",
   "scripts": {
     "start": "func start",
+    "do_post": "node ./src/scripts/sendRequest.js",
     "test": "echo \"No tests yet...\""
   },
   "dependencies": {
@@ -14,5 +15,5 @@
   "devDependencies": {
     "azure-functions-core-tools": "^4.0.5530"
   },
-  "main": "src/{index.js, functions/*.js}"
+  "main": "src/{index.js,functions/*.js}"
 }
