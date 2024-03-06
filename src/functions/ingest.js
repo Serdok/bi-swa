@@ -35,7 +35,7 @@ app.http("ingest", {
       password: process.env.AZURE_POSTGRESQL_PASSWORD,
       database: process.env.AZURE_POSTGRESQL_DATABASE,
       ssl: process.env.AZURE_POSTGRESQL_SSL,
-      max: 30,
+      max: 20,
       application_name: 'azure_functions',
       // log: (...args) => { context.trace(...args); },
       // idleTimeoutMillis: 0, // disable disconnect of idle client
