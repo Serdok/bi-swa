@@ -5,14 +5,16 @@
   "description": "",
   "scripts": {
     "start": "func start",
+    "do_post": "node ./src/scripts/sendRequest.js",
     "test": "echo \"No tests yet...\""
   },
   "dependencies": {
-    "@azure/functions": "^4.0.0",
+    "@azure/functions": "^4.3.0",
+    "@azure/service-bus": "^7.9.4",
     "pg": "^8.11.3"
   },
   "devDependencies": {
     "azure-functions-core-tools": "^4.0.5530"
   },
-  "main": "src/functions/*.js"
+  "main": "src/{index.js,functions/*.js}"
 }

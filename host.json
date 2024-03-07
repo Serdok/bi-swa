@@ -8,8 +8,23 @@
       }
     }
   },
+  "extensions": {
+    "serviceBus": {
+      "prefetchCount": 1000,
+      "batchOptions": {
+        "maxMessageCount": 1000
+      },
+      "messageHandlerOptions": {
+        "maxConcurrentCalls": 32
+      }
+    }
+  },
   "extensionBundle": {
     "id": "Microsoft.Azure.Functions.ExtensionBundle",
     "version": "[4.*, 5.0.0)"
+  },
+  "concurrency": {
+    "dynamicConcurrencyEnabled": true,
+    "snapshotPersistenceEnabled": true
   }
 }
