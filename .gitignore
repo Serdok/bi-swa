@@ -100,3 +100,6 @@ __azurite_db*__.json
 
 # IDE folders
 .idea/
+
+# Large files
+dau_item.json

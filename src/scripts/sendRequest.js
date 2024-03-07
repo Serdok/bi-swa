@@ -3,12 +3,12 @@ import { gzipSync } from "zlib";
 
 async function execute_request() {
   try {
-    const data = await readFile("./dau_item_202403071810.json", { encoding: "utf-8", });
+    const data = await readFile("./dau_item.json", { encoding: "utf-8", });
 
     const json = JSON.parse(data);
     console.log(`Read file: ${json.length} rows`);
 
-    const chunk_size = 100000;
+    const chunk_size = 10000;
     const requests = [];
     for (let i = 0; i < json.length; i += chunk_size) {
       const chunk = JSON.stringify(json.slice(i, i + chunk_size));

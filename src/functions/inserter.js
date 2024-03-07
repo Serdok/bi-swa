@@ -16,21 +16,31 @@ app.serviceBusQueue('inserter', {
             password: process.env.AZURE_POSTGRESQL_PASSWORD,
             database: process.env.AZURE_POSTGRESQL_DATABASE,
             ssl: process.env.AZURE_POSTGRESQL_SSL,
-            // max: 20,
+            max: 20,
             application_name: 'Azure Functions - Service Bus Trigger',
             // log: (...args) => { context.trace(...args); },
-            // idleTimeoutMillis: 0, // disable disconnect of idle client
+            idleTimeoutMillis: 0, // disable disconnect of idle client
             // statement_timeout: 10000, // 10s
             // allowExitOnIdle: true,
           };
 
+          const pool = new pg.Pool(config);
+          const queries = messages.map(query => pool.query(query.text, query.values));
+
           try {
-            const pool = new pg.Pool(config);
-            const queries = messages.map(query => pool.query(query.text, query.values));
             const result = await Promise.allSettled(queries);
+
+            const fulfilled = result.filter(res => res.status === 'fulfilled');
+            const rejected = result.filter(res => res.status === 'rejected');
+
+            if (rejected.length > 0) {
+              // TODO: Put messages back in queue to be processed again?
+              context.error(JSON.stringify(rejected));
+            }
+
             await pool.end();
 
-            context.log(`${queries.length} rows inserted in ${Date.now() - start} ms`);
+            context.log(`${fulfilled.length} rows inserted in ${Date.now() - start} ms`);
           } catch (e) {
             context.error(e);
             throw e;
